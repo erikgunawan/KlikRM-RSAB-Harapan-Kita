@@ -14,7 +14,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex-1 flex items-center justify-between">
               <Link to="/" className="flex items-center text-gray-900">
                 <img 
-                  src="/rsabhk-logo.png" 
+                  src="https://ibb.co.com/Dzbn0Vy" 
                   alt="RSAB Harapan Kita" 
                   className="h-8 w-auto"
                 />
