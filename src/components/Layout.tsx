@@ -14,7 +14,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex">
               <Link to="/" className="flex items-center px-2 py-2 text-gray-900">
                 <Stethoscope className="h-6 w-6 text-blue-600" />
-                <span className="ml-2 text-lg font-semibold">MedRecord</span>
+                <span className="ml-2 text-lg font-semibold">KlikRM - RSAB Harapan Kita</span>
               </Link>
               
               <div className="ml-10 flex items-center space-x-4">
