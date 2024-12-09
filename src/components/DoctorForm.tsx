@@ -1,114 +1,200 @@
-import React, { useState } from 'react';
-import { PlusCircle } from 'lucide-react';
-import { Patient, Examination } from '../types';
-import { savePatient, saveExamination } from '../utils/storage';
+import { useState } from 'react';
+import { PlusCircle, Search } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Input } from './ui/Input';
+import { Button } from './ui/Button';
+import { Select } from './ui/Select';
+import { ExaminationHistory } from './ExaminationHistory';
+import { savePatient, saveExamination, getPatientByMedicalNumber, getPatientExaminations } from '../services/api';
+import type { Patient, Examination } from '../types';
+
+const EXAMINATION_STATUS_OPTIONS = [
+  { value: '', label: 'Select status' },
+  { value: 'Scheduled', label: 'Scheduled' },
+  { value: 'In Progress', label: 'In Progress' },
+  { value: 'Completed', label: 'Completed' },
+];
 
 export default function DoctorForm() {
+  const [mode, setMode] = useState<'new' | 'existing'>('new');
   const [formData, setFormData] = useState({
     name: '',
     dateOfBirth: '',
     medicalRecordNumber: '',
     status: '',
-    notes: ''
+    notes: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [currentPatient, setCurrentPatient] = useState<Patient | null>(null);
+  const [examinations, setExaminations] = useState<Examination[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    const patient: Patient = {
-      id: crypto.randomUUID(),
-      name: formData.name,
-      dateOfBirth: formData.dateOfBirth,
-      medicalRecordNumber: formData.medicalRecordNumber
-    };
+    try {
+      let patientId = currentPatient?.id;
 
-    const examination: Examination = {
-      id: crypto.randomUUID(),
-      patientId: patient.id,
-      date: new Date().toISOString(),
-      status: formData.status,
-      notes: formData.notes
-    };
+      if (!patientId) {
+        const patient = await savePatient({
+          name: formData.name,
+          dateOfBirth: formData.dateOfBirth,
+          medicalRecordNumber: formData.medicalRecordNumber,
+        });
+        patientId = patient?.id;
+      }
 
-    savePatient(patient);
-    saveExamination(examination);
+      if (patientId) {
+        await saveExamination({
+          patientId,
+          status: formData.status,
+          notes: formData.notes,
+        });
+
+        // Refresh examination list
+        const updatedExaminations = await getPatientExaminations(formData.medicalRecordNumber);
+        setExaminations(updatedExaminations);
+
+        setFormData(prev => ({
+          ...prev,
+          status: '',
+          notes: '',
+        }));
+
+        toast.success('Examination record saved successfully!');
+      }
+    } catch (error) {
+      console.error('Error saving record:', error);
+      toast.error('Failed to save record. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!formData.medicalRecordNumber) return;
     
-    setFormData({
-      name: '',
-      dateOfBirth: '',
-      medicalRecordNumber: '',
-      status: '',
-      notes: ''
-    });
+    setIsSearching(true);
+    try {
+      const patient = await getPatientByMedicalNumber(formData.medicalRecordNumber);
+      if (patient) {
+        setCurrentPatient(patient);
+        setFormData(prev => ({
+          ...prev,
+          name: patient.name,
+          dateOfBirth: patient.dateOfBirth,
+        }));
+        
+        const patientExaminations = await getPatientExaminations(formData.medicalRecordNumber);
+        setExaminations(patientExaminations);
+      } else {
+        toast.error('No patient found with this medical record number.');
+        setCurrentPatient(null);
+        setExaminations([]);
+      }
+    } catch (error) {
+      console.error('Error searching patient:', error);
+      toast.error('Failed to search patient. Please try again.');
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Patient Name</label>
-        <input
-          type="text"
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          value={formData.name}
-          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
-        <input
-          type="date"
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          value={formData.dateOfBirth}
-          onChange={(e) => setFormData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Medical Record Number</label>
-        <input
-          type="text"
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          value={formData.medicalRecordNumber}
-          onChange={(e) => setFormData(prev => ({ ...prev, medicalRecordNumber: e.target.value }))}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Examination Status</label>
-        <select
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          value={formData.status}
-          onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+    <div className="space-y-8">
+      <div className="flex space-x-4">
+        <Button
+          variant={mode === 'new' ? 'primary' : 'outline'}
+          onClick={() => setMode('new')}
         >
-          <option value="">Select status</option>
-          <option value="Completed">Completed</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Scheduled">Scheduled</option>
-        </select>
+          New Patient
+        </Button>
+        <Button
+          variant={mode === 'existing' ? 'primary' : 'outline'}
+          onClick={() => setMode('existing')}
+        >
+          Existing Patient
+        </Button>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Notes</label>
-        <textarea
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          rows={4}
-          value={formData.notes}
-          onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-        />
-      </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid gap-6">
+          <div className="flex gap-4">
+            <Input
+              label="Medical Record Number"
+              required
+              value={formData.medicalRecordNumber}
+              onChange={(e) => setFormData(prev => ({ ...prev, medicalRecordNumber: e.target.value }))}
+            />
+            {mode === 'existing' && (
+              <Button
+                type="button"
+                variant="secondary"
+                className="mt-7"
+                onClick={handleSearch}
+                isLoading={isSearching}
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+            )}
+          </div>
 
-      <button
-        type="submit"
-        className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-      >
-        <PlusCircle className="w-5 h-5 mr-2" />
-        Add Patient Record
-      </button>
-    </form>
+          {(mode === 'new' || currentPatient) && (
+            <>
+              <Input
+                label="Patient Name"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                disabled={mode === 'existing'}
+              />
+
+              <Input
+                label="Date of Birth"
+                type="date"
+                required
+                value={formData.dateOfBirth}
+                onChange={(e) => setFormData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                disabled={mode === 'existing'}
+              />
+
+              <Select
+                label="Examination Status"
+                required
+                options={EXAMINATION_STATUS_OPTIONS}
+                value={formData.status}
+                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Notes
+                </label>
+                <textarea
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-offset-2 focus:ring-blue-200 focus:border-blue-400 transition-colors duration-200"
+                  rows={4}
+                  value={formData.notes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                />
+              </div>
+
+              <Button type="submit" isLoading={isSubmitting} className="mt-4">
+                <PlusCircle className="w-5 h-5 mr-2" />
+                {isSubmitting ? 'Saving...' : 'Save Examination'}
+              </Button>
+            </>
+          )}
+        </div>
+      </form>
+
+      {examinations.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Examination History</h3>
+          <ExaminationHistory examinations={examinations} patientName={currentPatient?.name} />
+        </div>
+      )}
+    </div>
   );
 }

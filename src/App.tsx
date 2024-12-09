@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Stethoscope, Users } from 'lucide-react';
+import { Toaster } from 'react-hot-toast';
 import DoctorForm from './components/DoctorForm';
 import PatientView from './components/PatientView';
 
@@ -8,6 +9,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Toaster position="top-right" />
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
