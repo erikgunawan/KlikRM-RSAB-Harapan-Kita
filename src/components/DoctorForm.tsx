@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PlusCircle, Search } from 'lucide-react';
+import { PlusCircle, Search, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
@@ -28,6 +28,18 @@ export default function DoctorForm() {
   const [isSearching, setIsSearching] = useState(false);
   const [currentPatient, setCurrentPatient] = useState<Patient | null>(null);
   const [examinations, setExaminations] = useState<Examination[]>([]);
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      dateOfBirth: '',
+      medicalRecordNumber: '',
+      status: '',
+      notes: '',
+    });
+    setCurrentPatient(null);
+    setExaminations([]);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +100,7 @@ export default function DoctorForm() {
         
         const patientExaminations = await getPatientExaminations(formData.medicalRecordNumber);
         setExaminations(patientExaminations);
+        toast.success('Patient found!');
       } else {
         toast.error('No patient found with this medical record number.');
         setCurrentPatient(null);
@@ -103,18 +116,34 @@ export default function DoctorForm() {
 
   return (
     <div className="space-y-8">
-      <div className="flex space-x-4">
+      <div className="flex items-center justify-between">
+        <div className="flex space-x-4">
+          <Button
+            variant={mode === 'new' ? 'primary' : 'outline'}
+            onClick={() => {
+              setMode('new');
+              resetForm();
+            }}
+          >
+            New Patient
+          </Button>
+          <Button
+            variant={mode === 'existing' ? 'primary' : 'outline'}
+            onClick={() => {
+              setMode('existing');
+              resetForm();
+            }}
+          >
+            Existing Patient
+          </Button>
+        </div>
         <Button
-          variant={mode === 'new' ? 'primary' : 'outline'}
-          onClick={() => setMode('new')}
+          variant="secondary"
+          onClick={resetForm}
+          className="flex items-center"
         >
-          New Patient
-        </Button>
-        <Button
-          variant={mode === 'existing' ? 'primary' : 'outline'}
-          onClick={() => setMode('existing')}
-        >
-          Existing Patient
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Clear Form
         </Button>
       </div>
 
@@ -126,6 +155,7 @@ export default function DoctorForm() {
               required
               value={formData.medicalRecordNumber}
               onChange={(e) => setFormData(prev => ({ ...prev, medicalRecordNumber: e.target.value }))}
+              placeholder="Enter medical record number"
             />
             {mode === 'existing' && (
               <Button
@@ -149,6 +179,7 @@ export default function DoctorForm() {
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 disabled={mode === 'existing'}
+                placeholder="Enter patient name"
               />
 
               <Input
@@ -177,6 +208,7 @@ export default function DoctorForm() {
                   rows={4}
                   value={formData.notes}
                   onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Enter examination notes"
                 />
               </div>
 
