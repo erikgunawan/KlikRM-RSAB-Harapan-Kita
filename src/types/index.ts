@@ -1,14 +1,16 @@
 export interface Patient {
   id: string;
+  medical_record_number: string;
   name: string;
-  dateOfBirth: string;
-  medicalRecordNumber: string;
+  date_of_birth: string;
+  created_at: string;
 }
 
 export interface Examination {
   id: string;
-  patientId: string;
-  date: string;
+  patient_id: string;
   status: string;
   notes: string;
+  examined_at: string;
+  doctor_name: string;
 }
