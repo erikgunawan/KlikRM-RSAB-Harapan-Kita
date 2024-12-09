@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Stethoscope, Users, LogIn } from 'lucide-react';
+import { Stethoscope, Users, User } from 'lucide-react';
+import { Toaster } from 'react-hot-toast';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
@@ -39,8 +40,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   }`}
                 >
                   <div className="flex items-center">
-                    <LogIn className="h-4 w-4 mr-1" />
-                    Patient Login
+                    <User className="h-4 w-4 mr-1" />
+                    Patient Portal
                   </div>
                 </Link>
               </div>
@@ -52,6 +53,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {children}
       </main>
+      
+      <Toaster position="top-right" />
     </div>
   );
 }
