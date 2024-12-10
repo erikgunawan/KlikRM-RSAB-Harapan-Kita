@@ -7,6 +7,7 @@ interface ExaminationFormProps {
   onSubmit: (examination: Partial<Examination>) => Promise<void>;
   initialData?: Examination;
   isEdit?: boolean;
+  onCancel?: () => void;
 }
 
 const defaultFormData = (patientId: string) => ({
@@ -20,7 +21,7 @@ const defaultFormData = (patientId: string) => ({
   examined_at: new Date().toISOString().split('T')[0]
 });
 
-export function ExaminationForm({ patientId, onSubmit, initialData, isEdit }: ExaminationFormProps) {
+export function ExaminationForm({ patientId, onSubmit, initialData, isEdit, onCancel }: ExaminationFormProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<Examination>>(
     initialData || defaultFormData(patientId)
@@ -49,6 +50,11 @@ export function ExaminationForm({ patientId, onSubmit, initialData, isEdit }: Ex
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleCancel() {
+    setFormData(defaultFormData(patientId));
+    onCancel?.();
   }
 
   function handleExaminationTypeChange(type: string) {
@@ -172,7 +178,7 @@ export function ExaminationForm({ patientId, onSubmit, initialData, isEdit }: Ex
           {isEdit && (
             <button
               type="button"
-              onClick={() => setFormData(defaultFormData(patientId))}
+              onClick={handleCancel}
               className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200"
             >
               Cancel
