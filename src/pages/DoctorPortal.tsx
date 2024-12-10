@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Tab } from '@headlessui/react';
 import { Patient, Examination } from '../types';
 import { SearchPatientForm } from '../components/doctor/SearchPatientForm';
-import { AddPatientForm } from '../components/doctor/AddPatientForm';
+import { PatientForm } from '../components/doctor/PatientForm';
 import { PatientDetails } from '../components/doctor/PatientDetails';
 import { clsx } from 'clsx';
 
 export default function DoctorPortal() {
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [patient, setPatient] = useState<Patient | null>(null);
   const [examinations, setExaminations] = useState<Examination[]>([]);
 
@@ -18,6 +19,7 @@ export default function DoctorPortal() {
   function handlePatientAdded(newPatient: Patient) {
     setPatient(newPatient);
     setExaminations([]);
+    setSelectedIndex(0);
   }
 
   function handleExaminationAdded(examination: Examination) {
@@ -30,12 +32,16 @@ export default function DoctorPortal() {
     ));
   }
 
+  function handlePatientUpdated(updatedPatient: Patient) {
+    setPatient(updatedPatient);
+  }
+
   return (
     <div className="space-y-8">
       <div className="bg-white shadow rounded-lg p-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Doctor Portal</h2>
         
-        <Tab.Group>
+        <Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
           <Tab.List className="flex space-x-1 rounded-xl bg-blue-900/10 p-1">
             <Tab className={({ selected }) =>
               clsx(
@@ -65,18 +71,19 @@ export default function DoctorPortal() {
               <SearchPatientForm onSuccess={handlePatientFound} />
             </Tab.Panel>
             <Tab.Panel>
-              <AddPatientForm onSuccess={handlePatientAdded} />
+              <PatientForm onSuccess={handlePatientAdded} />
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
       </div>
 
-      {patient && (
+      {patient && selectedIndex === 0 && (
         <PatientDetails
           patient={patient}
           examinations={examinations}
           onExaminationAdded={handleExaminationAdded}
           onExaminationUpdated={handleExaminationUpdated}
+          onPatientUpdated={handlePatientUpdated}
         />
       )}
     </div>
