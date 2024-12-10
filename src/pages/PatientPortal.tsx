@@ -99,23 +99,46 @@ export default function PatientPortal() {
             <div className="space-y-4">
               {examinations.map((exam) => (
                 <div key={exam.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 rounded-full text-sm ${
+                        exam.examination_status === 'Hasil sudah diambil'
+                          ? 'bg-green-100 text-green-800'
+                          : exam.examination_status === 'Analisis Dokter'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {exam.examination_status}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {format(new Date(exam.examined_at), 'PPp')}
+                      </span>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 gap-4">
-                    <div className="flex justify-between items-center">
-                      <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                        {exam.status}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {format(new Date(exam.examined_at), 'PP')}
-                      </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Service</p>
+                      <p className="font-medium">{exam.service}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Doctor</p>
                       <p className="font-medium">{exam.doctor_name}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Notes</p>
-                      <p className="font-medium text-sm">{exam.notes}</p>
+                      <p className="text-sm text-gray-600">Type of Examination</p>
+                      <div className="mt-1 space-y-1">
+                        {exam.examination_types.map((type) => (
+                          <p key={type} className="text-sm">• {type}</p>
+                        ))}
+                      </div>
                     </div>
+                    {exam.notes && (
+                      <div>
+                        <p className="text-sm text-gray-600">Notes</p>
+                        <p className="mt-1 text-sm">{exam.notes}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
