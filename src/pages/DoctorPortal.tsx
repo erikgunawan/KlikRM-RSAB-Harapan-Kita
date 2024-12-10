@@ -24,6 +24,12 @@ export default function DoctorPortal() {
     setExaminations([examination, ...examinations]);
   }
 
+  function handleExaminationUpdated(updatedExamination: Examination) {
+    setExaminations(examinations.map(exam => 
+      exam.id === updatedExamination.id ? updatedExamination : exam
+    ));
+  }
+
   return (
     <div className="space-y-8">
       <div className="bg-white shadow rounded-lg p-6">
@@ -70,6 +76,7 @@ export default function DoctorPortal() {
           patient={patient}
           examinations={examinations}
           onExaminationAdded={handleExaminationAdded}
+          onExaminationUpdated={handleExaminationUpdated}
         />
       )}
     </div>
