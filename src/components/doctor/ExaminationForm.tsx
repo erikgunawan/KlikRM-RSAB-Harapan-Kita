@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ClipboardList } from 'lucide-react';
 import { Examination, EXAMINATION_TYPES, SERVICES, EXAMINATION_STATUS } from '../../types';
 
@@ -9,20 +9,34 @@ interface ExaminationFormProps {
   isEdit?: boolean;
 }
 
+const defaultFormData = (patientId: string) => ({
+  patient_id: patientId,
+  service: 'Laboratorium',
+  examination_types: [],
+  status: '',
+  notes: '',
+  doctor_name: '',
+  examination_status: 'Sampel diterima',
+  examined_at: new Date().toISOString().split('T')[0]
+});
+
 export function ExaminationForm({ patientId, onSubmit, initialData, isEdit }: ExaminationFormProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<Examination>>(
-    initialData || {
-      patient_id: patientId,
-      service: 'Laboratorium',
-      examination_types: [],
-      status: '',
-      notes: '',
-      doctor_name: '',
-      examination_status: 'Sampel diterima',
-      examined_at: new Date().toISOString().split('T')[0]
-    }
+    initialData || defaultFormData(patientId)
   );
+
+  // Update form data when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        ...initialData,
+        examined_at: initialData.examined_at.split('T')[0]
+      });
+    } else {
+      setFormData(defaultFormData(patientId));
+    }
+  }, [initialData, patientId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,16 +44,7 @@ export function ExaminationForm({ patientId, onSubmit, initialData, isEdit }: Ex
     try {
       await onSubmit(formData);
       if (!isEdit) {
-        setFormData({
-          patient_id: patientId,
-          service: 'Laboratorium',
-          examination_types: [],
-          status: '',
-          notes: '',
-          doctor_name: '',
-          examination_status: 'Sampel diterima',
-          examined_at: new Date().toISOString().split('T')[0]
-        });
+        setFormData(defaultFormData(patientId));
       }
     } finally {
       setLoading(false);
@@ -156,13 +161,24 @@ export function ExaminationForm({ patientId, onSubmit, initialData, isEdit }: Ex
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-        >
-          {loading ? 'Saving...' : (isEdit ? 'Update Examination' : 'Add Examination')}
-        </button>
+        <div className="flex gap-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading ? 'Saving...' : (isEdit ? 'Update Examination' : 'Add Examination')}
+          </button>
+          {isEdit && (
+            <button
+              type="button"
+              onClick={() => setFormData(defaultFormData(patientId))}
+              className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
     </div>
   );
