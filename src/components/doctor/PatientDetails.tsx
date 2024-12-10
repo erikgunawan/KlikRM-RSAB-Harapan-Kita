@@ -55,6 +55,10 @@ export function PatientDetails({
     }
   }
 
+  function handleCancelEdit() {
+    setEditingExamination(null);
+  }
+
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <div className="mb-6">
@@ -80,6 +84,7 @@ export function PatientDetails({
         onSubmit={handleSubmitExamination}
         initialData={editingExamination || undefined}
         isEdit={!!editingExamination}
+        onCancel={handleCancelEdit}
       />
 
       <div className="mt-8">
