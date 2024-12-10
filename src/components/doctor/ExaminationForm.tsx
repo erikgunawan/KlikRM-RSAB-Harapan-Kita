@@ -27,7 +27,6 @@ export function ExaminationForm({ patientId, onSubmit, initialData, isEdit, onCa
     initialData || defaultFormData(patientId)
   );
 
-  // Update form data when initialData changes
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -93,19 +92,6 @@ export function ExaminationForm({ patientId, onSubmit, initialData, isEdit, onCa
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Examination Date
-            </label>
-            <input
-              type="date"
-              value={formData.examined_at?.split('T')[0]}
-              onChange={(e) => setFormData({ ...formData, examined_at: e.target.value })}
-              className="w-full px-4 py-2 border rounded-md"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
               Doctor Name
             </label>
             <input
@@ -115,24 +101,6 @@ export function ExaminationForm({ patientId, onSubmit, initialData, isEdit, onCa
               className="w-full px-4 py-2 border rounded-md"
               required
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Examination Status
-            </label>
-            <select
-              value={formData.examination_status}
-              onChange={(e) => setFormData({ ...formData, examination_status: e.target.value })}
-              className="w-full px-4 py-2 border rounded-md"
-              required
-            >
-              {EXAMINATION_STATUS.map(status => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
 
@@ -152,6 +120,39 @@ export function ExaminationForm({ patientId, onSubmit, initialData, isEdit, onCa
                 <span className="text-sm">{type}</span>
               </label>
             ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Examination Status
+            </label>
+            <select
+              value={formData.examination_status}
+              onChange={(e) => setFormData({ ...formData, examination_status: e.target.value })}
+              className="w-full px-4 py-2 border rounded-md"
+              required
+            >
+              {EXAMINATION_STATUS.map(status => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Examination Date
+            </label>
+            <input
+              type="date"
+              value={formData.examined_at?.split('T')[0]}
+              onChange={(e) => setFormData({ ...formData, examined_at: e.target.value })}
+              className="w-full px-4 py-2 border rounded-md"
+              required
+            />
           </div>
         </div>
 
